@@ -17,7 +17,6 @@ jobs:
       - name: upload GeoJSON artifact
         uses: actions/upload-artifact@v4
         with:
-          name: fr-37-bike-parking-stations.geojson
           path: output.geojson
   upload:
     runs-on: ubuntu-latest
@@ -26,9 +25,6 @@ jobs:
     steps:
       - name: retrieve GeoJSON artifact
         uses: actions/download-artifact@v4
-        with:
-          name: fr-37-bike-parking-stations.geojson
-          path: stationnement-cyclable-gares-serm.geojson
       - name: Upload artifact to data.gouv
         env:
           DATA_GOUV_API_KEY: ${{ secrets.DATA_GOUV_API_KEY }}
@@ -38,8 +34,8 @@ jobs:
         run: |
             ls -lh
             pwd
-            cat stationnement-cyclable-gares-serm.geojson
-            curl --fail-with-body -H "Accept:application/geo+json" -H "X-Api-Key:$DATA_GOUV_API_KEY" -F "file=@./stationnement-cyclable-gares-serm.geojson" \
+            cat output.geojson
+            curl --fail-with-body -H "Accept:application/geo+json" -H "X-Api-Key:$DATA_GOUV_API_KEY" -F "file=@./output.geojson" \
              -X POST "$DATA_GOUV_API/datasets/$DATA_GOUV_DATASET/resources/$DATA_GOUV_RESOURCE/upload/"
     
     

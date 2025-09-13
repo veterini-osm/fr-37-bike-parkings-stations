@@ -1,0 +1,19 @@
+name: Overpass to GeoJSON
+
+on: [push]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: fetch and convert OSM Overpass data
+        run: |
+          pip install -r requirements.txt
+          python main.py
+      - name: upload GeoJSON artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fr-37-bike-parking-stations.geojson
+          path: output.geojson

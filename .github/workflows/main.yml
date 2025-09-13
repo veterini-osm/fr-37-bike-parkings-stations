@@ -36,8 +36,9 @@ jobs:
           DATA_GOUV_DATASET: ${{ vars.DATA_GOUV_DATASET }}
           DATA_GOUV_RESOURCE: ${{ vars.DATA_GOUV_RESOURCE }}
         run: |
-            ls -l
+            ls -lh
             pwd
+            cat stationnement-cyclable-gares-serm.geojson
             curl --fail-with-body -H "Accept:application/geo+json" -H "X-Api-Key:$DATA_GOUV_API_KEY" -F "file=@./stationnement-cyclable-gares-serm.geojson" \
              -X POST "$DATA_GOUV_API/datasets/$DATA_GOUV_DATASET/resources/$DATA_GOUV_RESOURCE/upload/"
     

@@ -19,6 +19,7 @@ jobs:
           path: output.geojson
   upload:
     runs-on: ubuntu-latest
+    needs: run
     steps:
       - name: retrieve GeoJSON artifact
         uses: actions/download-artifact@v4

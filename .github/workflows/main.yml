@@ -17,17 +17,22 @@ jobs:
         with:
           name: fr-37-bike-parking-stations.geojson
           path: output.geojson
-  release:
+  upload:
     runs-on: ubuntu-latest
     steps:
-      - name: Get current date
-        id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-      - name: Release
-        uses: svenstaro/upload-release-action@v2
+      - name: retrieve GeoJSON artifact
+        uses: actions/download-artifact@v4
         with:
-          file: fr-37-bike-parking-stations.geojson
-          overwrite: true
+          name: fr-37-bike-parking-stations.geojson
+          path: stationnement-cyclable-gares-serm.geojson
+      - name: Upload artifact to data.gouv
+        env:
+          DATA_GOUV_API_KEY: ${{ secrets.DATA_GOUV_API_KEY }}
+        run: |
+            curl -H "Accept:application/json" \
+             -H "X-Api-Key:$DATA_GOUV_API_KEY" \
+             -F "file=./stationnement-cyclable-gares-serm.geojson" \
+             -X POST "$DATA_GOUV_API/datasets/$DATA_GOUV_DATASET/resources/$DATA_GOUV_RESOURCE/upload/"
     
     
     

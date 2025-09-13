@@ -27,7 +27,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           file: fr-37-bike-parking-stations.geojson
-          tag: ${{ steps.date.outputs.date }}
           overwrite: true
     
     

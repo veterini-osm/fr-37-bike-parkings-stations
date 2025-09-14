@@ -35,7 +35,7 @@ foreach .stations->.station {
   nwr.bp(if:is_number(t["capacity"]))->.bpc;
   nwr.bp(if:is_number(t["capacity:charging"]))->.charging_bpc;
   nwr.bpc[locked=yes]->.locked_bpc;
-  nwr.bpc[locked!=yes][fee!=yes][access!=customers][access!=private][access!=no]->.free_bpc;
+  nwr.bpc[locked!=yes][fee!=yes][access!=customers][access!=private][access!=members][access!=no]->.free_bpc;
   (
    nwr.bpc[bicycle_parking=stands];
    nwr.bpc["capacity:stands"];

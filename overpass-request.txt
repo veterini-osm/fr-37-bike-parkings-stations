@@ -1,0 +1,68 @@
+[out:json];
+
+(
+  {{geocodeArea:Indre-et-Loire}};
+  {{geocodeArea:"Saumur"}};
+  {{geocodeArea:"Territoires vendômois"}};
+  {{geocodeArea:"Communauté d'agglomération de Blois \"Agglopolys\""}};
+  {{geocodeArea:"Château-du-Loir"}};
+)->.searchArea;
+
+// Get all stations or halts in the area (except touristic trains)
+(
+  nwr[railway=station][operator!="Train Touristique de la Vallée du Loir"](area.searchArea);
+  nwr[railway=halt][operator!="A.E.C.F.M"](area.searchArea);
+)->.allStations;
+
+// Exclude a few stations beyond the scope of SERM-T
+(
+  nwr.allStations
+  [name!="Chenonceaux"]
+  [name!="La Chaussée-Saint-Victor"]
+  [name!="Ménars"];
+) ->.stations;
+
+foreach .stations->.station {
+  nwr(around.station:200)[amenity=bicycle_parking][bicycle_parking!=floor]->.bp;
+  (
+    nwr(around.station:200)["service:bicycle:tools"=yes];
+    nwr(around.station:200)["service:bicycle:tools"=separate];
+  )->.tools;
+  (
+    nwr(around.station:200)["service:bicycle:pump"=yes];
+    nwr(around.station:200)["service:bicycle:pump"=separate];
+  )->.pump;
+  nwr.bp(if:is_number(t["capacity"]))->.bpc;
+  nwr.bp(if:is_number(t["capacity:charging"]))->.charging_bpc;
+  nwr.bpc[locked=yes]->.locked_bpc;
+  nwr.bpc[locked!=yes][fee!=yes][access!=customers][access!=private][access!=no]->.free_bpc;
+  (
+   nwr.bpc[bicycle_parking=stands];
+   nwr.bpc["capacity:stands"];
+   nwr.bpc[bicycle_parking=bollard];
+   nwr.bpc["capacity:bollard"];
+   nwr.bpc[bicycle_parking="two-tier"];
+   nwr.bpc["capacity:two-tier"];
+   nwr.bpc[bicycle_parking=lockers];
+   nwr.bpc["capacity:lockers"];
+   nwr.bpc[bicycle_parking=safe_loops];
+   nwr.bpc["capacity:safe_loops"];
+   nwr.bpc[bicycle_parking=wide_stands];
+   nwr.bpc["capacity:wide_stands"];
+  )->.good_bpc;
+  nwr.good_bpc[locked!=yes][fee!=yes][access!=customers][access!=private][access!=no]->.free_good_bpc;
+.station convert Feature 
+ ::geom = center(geom()),
+ :: = ::,
+ id = id(),
+ bicycle_total_capacity = bpc.sum(t["capacity"]),
+ bicycle_free_capacity = free_bpc.sum(t["capacity"]),
+ bicycle_locked_capacity = locked_bpc.sum(t["capacity"]),
+ bicycle_charging_capacity = charging_bpc.sum(t["capacity:charging"]),
+ bicycle_good_capacity = good_bpc.sum(t["capacity"]),
+ bicycle_free_good_capacity = free_good_bpc.sum(t["capacity"]),
+ bicycle_has_tools = tools.count(nwr) > 0,
+ bicycle_has_pump = pump.count(nwr) > 0;
+ out geom;
+}
+out geom;

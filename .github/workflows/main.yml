@@ -1,0 +1,45 @@
+name: Overpass to GeoJSON
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "23 2 * * *"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: fetch and convert OSM Overpass data
+        run: |
+          echo "Install dependencies"
+          pip install -r requirements.txt
+          echo "Fetch and convert Overpass data"
+          python main.py
+      - name: upload GeoJSON artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: output.geojson
+  upload:
+    runs-on: ubuntu-latest
+    needs: run
+    environment: main
+    steps:
+      - name: retrieve GeoJSON artifact
+        uses: actions/download-artifact@v4
+      - name: Upload artifact to data.gouv
+        env:
+          DATA_GOUV_API_KEY: ${{ secrets.DATA_GOUV_API_KEY }}
+          DATA_GOUV_API: ${{ vars.DATA_GOUV_API }}
+          DATA_GOUV_DATASET: ${{ vars.DATA_GOUV_DATASET }}
+          DATA_GOUV_RESOURCE: ${{ vars.DATA_GOUV_RESOURCE }}
+        run: |
+            mv artifact/output.geojson stationnement-cyclable-gares-serm.geojson
+            curl --fail-with-body -H "Accept:application/geo+json" -H "X-Api-Key:$DATA_GOUV_API_KEY" -F "file=@./stationnement-cyclable-gares-serm.geojson" \
+             -X POST "$DATA_GOUV_API/datasets/$DATA_GOUV_DATASET/resources/$DATA_GOUV_RESOURCE/upload/"
+    
+    
+    

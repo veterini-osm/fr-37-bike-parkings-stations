@@ -1,6 +1,10 @@
 name: Overpass to GeoJSON
 
 on:
+  push:
+    branches:
+      - main
+      - ci
   schedule:
     - cron: "23 2 * * *"
 
